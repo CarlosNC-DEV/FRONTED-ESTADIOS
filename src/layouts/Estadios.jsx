@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import axios from 'axios';
+import Swal from 'sweetalert2'
+import 'sweetalert2/dist/sweetalert2.css'
 import { IoReloadSharp, IoAddOutline, IoPeopleOutline, IoPersonOutline, IoEarthOutline, IoLocationOutline, IoFootballOutline } from 'react-icons/io5';
 
 const Estadios = () => {
@@ -54,11 +56,67 @@ const Estadios = () => {
 
     const opera = async()=>{
         if(operacion === 1){
-            const respuesta = await axios.post(URL, { nombre: nombre, pais: pais, ciudad:ciudad });
-            console.log(respuesta.data);
-            location.reload();
+            try {
+                const respuesta = await axios.post(URL, { nombre: nombre, pais: pais, ciudad:ciudad });
+                if(respuesta.status === 200 && respuesta.data){
+                    // Muestra la alerta de éxito
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Registro Exitoso',
+                        text: '¡Nuevo Estadio Agregado!',
+                        showConfirmButton: false,
+                        timer: 1500}).then(()=>{
+                            window.location.href = '/estadios'
+                    });
+                }
+            } catch (error) {
+                if (error.response.status === 400) {
+                    Swal.fire({
+                        title: 'Error',
+                        text: error.response.data,
+                        icon: 'error',
+                        confirmButtonText: 'Aceptar'
+                    });
+                }
+            }
         }else if(operacion===2){
-            const respuesta = await axios.put(`${URL}/${id}`, { nombre: nombre, pais: pais, ciudad:ciudad });
+            try {
+                Swal.fire({
+                    title: '¿Estas seguro/a?',
+                    text: "Vas a actualizar el estadio!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Si, Actualizar Estadio!'
+                    }).then(async(result) => {
+                    if (result.isConfirmed) {
+                        try {
+                            const respuesta = await axios.put(`${URL}/${id}`, { nombre: nombre, pais: pais, ciudad:ciudad });
+                            if(respuesta.status === 200 && respuesta.data){
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: `${respuesta.data}`,
+                                    showConfirmButton: false,
+                                    timer: 1500}).then(()=>{
+                                        window.location.href = '/estadios'
+                                });
+                            }
+                        } catch (error) {
+                            if (error.response.status === 400) {
+                                Swal.fire({
+                                    title: 'Error',
+                                    text: error.response.data,
+                                    icon: 'error',
+                                    confirmButtonText: 'Aceptar'
+                                });
+                            }
+                        }
+                    }
+                    });
+            } catch (error) {
+                
+            }
             console.log(respuesta.data);
             location.reload();
         }
@@ -73,10 +131,12 @@ const Estadios = () => {
                 </div>
                 <table className='table text-center border mt-4'>
                     <thead className='border' style={{background: '#e9edee'}}>
-                        <th>Nombre Estadio</th>
-                        <th>Pais</th>
-                        <th>Ciudad</th>
-                        <th>Actualizar</th>
+                        <tr>
+                            <th>Nombre Estadio</th>
+                            <th>Pais</th>
+                            <th>Ciudad</th>
+                            <th>Actualizar</th>
+                        </tr>
                     </thead>
                     <tbody>
                         {estadios.map((estadios)=>(
@@ -94,7 +154,7 @@ const Estadios = () => {
             </div>
 
             <div>
-            <div className="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                 <div className="modal-dialog">
                     <div className="modal-content">
                     <div className="modal-header">
@@ -103,25 +163,25 @@ const Estadios = () => {
                     </div>
                     <div className="modal-body">
 
-                        <div class="input-group mb-3">
-                            <span class="input-group-text" id="basic-addon1"><IoFootballOutline/></span>
-                            <input type="text" class="form-control" placeholder="Nombre Estadio" aria-label="Nombre Estadio" value={nombre} onChange={(e)=> setNombre(e.target.value)}/>
+                        <div className="input-group mb-3">
+                            <span className="input-group-text" id="basic-addon1"><IoFootballOutline/></span>
+                            <input type="text" className="form-control" placeholder="Nombre Estadio" aria-label="Nombre Estadio" value={nombre} onChange={(e)=> setNombre(e.target.value)}/>
                         </div>
 
-                        <div class="input-group mb-3">
-                            <span class="input-group-text" id="basic-addon1"><IoEarthOutline/></span>
-                            <input type="text" class="form-control" placeholder="País" aria-label="País" value={pais} onChange={(e)=> setPais(e.target.value)}/>
+                        <div className="input-group mb-3">
+                            <span className="input-group-text" id="basic-addon1"><IoEarthOutline/></span>
+                            <input type="text" className="form-control" placeholder="País" aria-label="País" value={pais} onChange={(e)=> setPais(e.target.value)}/>
                         </div>
 
-                        <div class="input-group mb-3">
-                            <span class="input-group-text" id="basic-addon1"><IoLocationOutline/></span>
-                            <input type="text" class="form-control" placeholder="Ciudad" aria-label="Ciudad" value={ciudad} onChange={(e)=> setCiudad(e.target.value)}/>
+                        <div className="input-group mb-3">
+                            <span className="input-group-text" id="basic-addon1"><IoLocationOutline/></span>
+                            <input type="text" className="form-control" placeholder="Ciudad" aria-label="Ciudad" value={ciudad} onChange={(e)=> setCiudad(e.target.value)}/>
                         </div>
 
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                        <button type="button" class="btn btn-primary" onClick={()=> opera()}>Guardar</button>
+                    <div className="modal-footer">
+                        <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                        <button type="button" className="btn btn-primary" onClick={()=> opera()}>Guardar</button>
                     </div>
                     </div>
                 </div>

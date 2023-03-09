@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import axios from 'axios';
+import Swal from 'sweetalert2'
+import 'sweetalert2/dist/sweetalert2.css'
 import { IoReloadSharp, IoAddOutline, IoPeopleOutline, IoPersonOutline, IoEarthOutline, IoLocationOutline } from 'react-icons/io5';
 
 
@@ -60,13 +62,75 @@ const Equipos = () => {
 
     const opera = async()=>{
         if(operacion === 1){
-            const respuesta = await axios.post(URL, { nombre: nombre, director:director, pais: pais, ciudad:ciudad });
-            console.log(respuesta.data);
-            location.reload();
+            try {
+                const respuesta = await axios.post(URL, { nombre: nombre, director:director, pais: pais, ciudad:ciudad });
+                if(respuesta.status === 200 && respuesta.data){
+                    // Muestra la alerta de éxito
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Registro Exitoso',
+                        text: '¡Nuevo Equipo Agregado!',
+                        showConfirmButton: false,
+                        timer: 1500}).then(()=>{
+                            window.location.href = '/equipos'
+                    });
+                }
+            } catch (error) {
+                if (error.response.status === 400) {
+                    Swal.fire({
+                        title: 'Error',
+                        text: error.response.data,
+                        icon: 'error',
+                        confirmButtonText: 'Aceptar'
+                    });
+                }
+            }
         }else if(operacion===2){
-            const respuesta = await axios.put(`${URL}/${id}`, { nombre: nombre, director:director, pais: pais, ciudad:ciudad });
-            console.log(respuesta.data);
-            location.reload();
+            try {
+            Swal.fire({
+                title: '¿Estas seguro/a?',
+                text: "Vas a actualizar el equipo!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Si, Actualizar Equipo!'
+                }).then(async(result) => {
+                if (result.isConfirmed) {
+                    try {
+                        const respuesta = await axios.put(`${URL}/${id}`, { nombre: nombre, director:director, pais: pais, ciudad:ciudad });
+                        if(respuesta.status === 200 && respuesta.data){
+                            Swal.fire({
+                                icon: 'success',
+                                title: `${respuesta.data}`,
+                                showConfirmButton: false,
+                                timer: 1500}).then(()=>{
+                                    window.location.href = '/equipos'
+                            });
+                        }
+                    } catch (error) {
+                        if (error.response.status === 400) {
+                            Swal.fire({
+                                title: 'Error',
+                                text: error.response.data,
+                                icon: 'error',
+                                confirmButtonText: 'Aceptar'
+                            });
+                        }
+                    }
+                }
+                });
+            } catch (error) {
+                if(error.response.status === 400){
+                    Swal.fire({
+                        icon: 'error',
+                        title: `${error.response.data}`,
+                        showConfirmButton: false,
+                        timer: 1500}).then(()=>{
+                            window.location.href = '/equipos'
+                    });
+                }
+            }
         }
     }
 
@@ -79,11 +143,13 @@ const Equipos = () => {
                 </div>
                 <table className='table text-center border mt-4'>
                     <thead className='border' style={{background: '#e9edee'}}>
-                        <th>Nombre</th>
-                        <th>Director Tecnico</th>
-                        <th>Pais</th>
-                        <th>Ciudad</th>
-                        <th>Actualizar</th>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Director Tecnico</th>
+                            <th>Pais</th>
+                            <th>Ciudad</th>
+                            <th>Actualizar</th>
+                        </tr>
                     </thead>
                     <tbody>
                         {equipos.map((equipos)=>(
@@ -111,30 +177,30 @@ const Equipos = () => {
                     </div>
                     <div className="modal-body">
 
-                        <div class="input-group mb-3">
-                            <span class="input-group-text" id="basic-addon1"><IoPeopleOutline/></span>
-                            <input type="text" class="form-control" placeholder="Nombre Equipo" aria-label="Nombre Equipo" value={nombre} onChange={(e)=> setNombre(e.target.value)}/>
+                        <div className="input-group mb-3">
+                            <span className="input-group-text" id="basic-addon1"><IoPeopleOutline/></span>
+                            <input type="text" className="form-control" placeholder="Nombre Equipo" aria-label="Nombre Equipo" value={nombre} onChange={(e)=> setNombre(e.target.value)}/>
                         </div>
 
-                        <div class="input-group mb-3">
-                            <span class="input-group-text" id="basic-addon1"><IoPersonOutline/></span>
-                            <input type="text" class="form-control" placeholder="Director Tecnico" aria-label="Director Tecnico" value={director} onChange={(e)=> setDirector(e.target.value)}/>
+                        <div className="input-group mb-3">
+                            <span className="input-group-text" id="basic-addon1"><IoPersonOutline/></span>
+                            <input type="text" className="form-control" placeholder="Director Tecnico" aria-label="Director Tecnico" value={director} onChange={(e)=> setDirector(e.target.value)}/>
                         </div>
 
-                        <div class="input-group mb-3">
-                            <span class="input-group-text" id="basic-addon1"><IoEarthOutline/></span>
-                            <input type="text" class="form-control" placeholder="País" aria-label="País" value={pais} onChange={(e)=> setPais(e.target.value)}/>
+                        <div className="input-group mb-3">
+                            <span className="input-group-text" id="basic-addon1"><IoEarthOutline/></span>
+                            <input type="text" className="form-control" placeholder="País" aria-label="País" value={pais} onChange={(e)=> setPais(e.target.value)}/>
                         </div>
 
-                        <div class="input-group mb-3">
-                            <span class="input-group-text" id="basic-addon1"><IoLocationOutline/></span>
-                            <input type="text" class="form-control" placeholder="Ciudad" aria-label="Ciudad" value={ciudad} onChange={(e)=> setCiudad(e.target.value)}/>
+                        <div className="input-group mb-3">
+                            <span className="input-group-text" id="basic-addon1"><IoLocationOutline/></span>
+                            <input type="text" className="form-control" placeholder="Ciudad" aria-label="Ciudad" value={ciudad} onChange={(e)=> setCiudad(e.target.value)}/>
                         </div>
 
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                        <button type="button" class="btn btn-primary" onClick={()=> opera()}>Guardar</button>
+                    <div className="modal-footer">
+                        <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                        <button type="button" className="btn btn-primary" onClick={()=> opera()}>Guardar</button>
                     </div>
                     </div>
                 </div>
